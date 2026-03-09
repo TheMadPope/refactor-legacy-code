@@ -1,0 +1,67 @@
+#!/bin/bash
+####################################################################################################
+#
+# FILENAME:     run_all_tests
+#
+# PURPOSE:      Runs local tests (not tests from managed packages)
+#
+# INSTRUCTIONS: Execute the following command relative to your project's root directory:  
+#               ./dev-tools/run_all_tests
+#
+#### LOAD SHARED FUNCTIONS LIBRARY #################################################################
+# Make sure that the shared-functions.sh script exists.
+# Start from the current directory
+current_dir=$(realpath .)
+
+# Look for the "dev-tools" directory by traversing up the directory structure
+while [[ "$current_dir" != "/" ]]; do
+  if [[ -d "$current_dir/dev-tools" ]]; then
+    root_dir="$current_dir/dev-tools"
+    break
+  fi
+  current_dir=$(dirname "$current_dir")
+done
+
+# Check if the "dev-tools" directory was found
+if [[ -z "$root_dir" ]]; then
+  echo "FATAL ERROR: `tput sgr0``tput setaf 1`Could not find the dev-tools directory."
+  exit 1
+fi
+
+# Now you can use "$root_dir" as the root directory
+lib_path="$root_dir/lib/shared-functions.sh"
+if [[ ! -r "$lib_path" ]]; then
+  echo "FATAL ERROR: `tput sgr0``tput setaf 1`Could not load $lib_path. File not found."
+  exit 1
+fi
+
+# Load the shared-functions.sh library.  This action will also cause the
+# config variables from dev-tools/lib/local-config.sh to be loaded.
+source "$lib_path"
+
+#### CONFIRM SCRIPT EXECUTION ######################################################################
+confirmScriptExecution "Do you want to run all tests currently deployed to your scratch org?"
+
+#### CREATE LOCAL VARIABLES ########################################################################
+# No local variables are used by this script.
+
+#### RUN ALL (LOCAL) TESTS IN THE SCRATCH ORG ######################################################
+# 0. Reset the Step Message counter and set the TOTAL STEPS to 1.
+resetStepMsgCounter 1
+
+# 1. Run all tests as human readable, with final output made to the temp directory.
+echoStepMsg "Run all (local) tests currently deployed to $SCRATCH_ORG_ALIAS"
+command="sf apex run test --test-level RunLocalTEsts --output-dir ./temp/apex-test-results --result-format human --synchronous --detailed-coverage"
+echo "Executing: $command"
+(cd $PROJECT_ROOT && exec $command)
+
+# Check if the previous command executed successfully. If not, abort this script.
+if [ $? -ne 0 ]; then
+  echoErrorMsg "The previous command did not execute as expected. Aborting script"
+  exit 1
+fi
+
+#### ECHO CLOSING SUCCESS MESSAGE ##################################################################
+echoScriptCompleteMsg "Tests complete.  Test results should be available in $PROJECT_ROOT/temp/apex-test-results"
+
+##END##
