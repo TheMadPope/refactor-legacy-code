@@ -1,0 +1,249 @@
+#!/bin/bash
+####################################################################################################
+#
+# FILENAME:     collect_benchmarker_data
+#
+# PURPOSE:      Runs individual Apex tests and collects Benchmarker debug output into CSV
+#
+# INSTRUCTIONS: Execute the following command relative to your project's root directory:
+#               ./dev-tools/scripts/collect_benchmarker_data
+#
+#               To test with just the first N test classes:
+#               ./dev-tools/scripts/collect_benchmarker_data --limit N
+#
+
+#### LOAD SHARED FUNCTIONS LIBRARY ################################################################
+# Make sure that the shared-functions.sh script exists.
+# Start from the current directory
+current_dir=$(realpath .)
+
+# Look for the "dev-tools" directory by traversing up the directory structure
+while [[ "$current_dir" != "/" ]]; do
+  if [[ -d "$current_dir/dev-tools" ]]; then
+    root_dir="$current_dir/dev-tools"
+    break
+  fi
+  current_dir=$(dirname "$current_dir")
+done
+
+# Check if the "dev-tools" directory was found
+if [[ -z "$root_dir" ]]; then
+  echo "FATAL ERROR: Could not find the dev-tools directory."
+  exit 1
+fi
+
+# Load the shared-functions.sh library
+lib_path="$root_dir/lib/shared-functions.sh"
+if [[ ! -r "$lib_path" ]]; then
+  echo "FATAL ERROR: Could not load $lib_path. File not found."
+  exit 1
+fi
+
+# Load the shared-functions.sh library
+source "$lib_path"
+
+#### CONFIRM SCRIPT EXECUTION ######################################################################
+confirmWithAbort "Do you want to run all test classes individually and collect Benchmarker data?"
+
+#### CREATE LOCAL VARIABLES ########################################################################
+OUTPUT_FILE="$PROJECT_ROOT/benchmarker_results.csv"
+TEMP_LOG_DIR="$PROJECT_ROOT/temp/test-logs"
+
+# Create temp directory if it doesn't exist
+mkdir -p "$TEMP_LOG_DIR"
+
+# Create CSV header
+echo "Apex Class Name,methodName,Heap,Queries,CpuTime,DmlStatements" > "$OUTPUT_FILE"
+
+#### FUNCTIONS ######################################################################################
+
+# Function to extract benchmarker data from log content
+extract_benchmarker_data() {
+    local log_content="$1"
+    local test_class="$2"
+    local temp_data=""
+    local method_name=""
+    local heap=""
+    local queries=""
+    local cpu_time=""
+    local dml_statements=""
+
+    # Parse the log content line by line
+    while IFS= read -r line; do
+        if [[ $line == *"Benchmarker:methodName:"* ]]; then
+            # If we have previous data, write it out first
+            if [[ -n "$method_name" ]]; then
+                echo "$test_class,$method_name,$heap,$queries,$cpu_time,$dml_statements" >> "$OUTPUT_FILE"
+            fi
+            # Extract method name and strip ANSI color codes and whitespace
+            method_name=$(echo "$line" | sed 's/.*Benchmarker:methodName: *//' | sed 's/\[[0-9;]*m//g' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            # Reset other values
+            heap=""
+            queries=""
+            cpu_time=""
+            dml_statements=""
+        elif [[ $line == *"Benchmarker:Heap:"* ]]; then
+            heap=$(echo "$line" | sed 's/.*Benchmarker:Heap: *//' | sed 's/\[[0-9;]*m//g' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            heap=$(echo "$heap" | sed 's/[^0-9]//g')
+        elif [[ $line == *"Benchmarker:Queries:"* ]]; then
+            queries=$(echo "$line" | sed 's/.*Benchmarker:Queries: *//' | sed 's/\[[0-9;]*m//g' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            queries=$(echo "$queries" | sed 's/[^0-9]//g')
+        elif [[ $line == *"Benchmarker:CpuTime:"* ]]; then
+            cpu_time=$(echo "$line" | sed 's/.*Benchmarker:CpuTime: *//' | sed 's/\[[0-9;]*m//g' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            cpu_time=$(echo "$cpu_time" | sed 's/[^0-9]//g')
+        elif [[ $line == *"Benchmarker:DmlStatements:"* ]]; then
+            dml_statements=$(echo "$line" | sed 's/.*Benchmarker:DmlStatements: *//' | sed 's/\[[0-9;]*m//g' | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+            dml_statements=$(echo "$dml_statements" | sed 's/[^0-9]//g')
+        fi
+    done <<< "$log_content"
+
+    # Write out the last set of data if it exists
+    if [[ -n "$method_name" ]]; then
+        echo "$test_class,$method_name,$heap,$queries,$cpu_time,$dml_statements" >> "$OUTPUT_FILE"
+    fi
+}
+
+# Function to run a single test class and collect its logs
+run_test_and_collect_logs() {
+    local test_class="$1"
+    local test_class_no_ext="${test_class%.cls}"
+
+    echo "Running test class: $test_class_no_ext"
+
+    # Prepare output files
+    local test_output_file="$TEMP_LOG_DIR/${test_class_no_ext}_output.txt"
+    local log_output_file="$TEMP_LOG_DIR/${test_class_no_ext}_logs.txt"
+
+    # Clear any previous debug logs to get a clean slate
+    echo "  Clearing previous debug logs..."
+    sf apex get log --number 25 > /dev/null 2>&1  # Get and discard existing logs
+
+    # Run the test with detailed human-readable output that might include debug logs
+    echo "  Running test..."
+    sf apex run test --tests "$test_class_no_ext" \
+        --result-format human \
+        --synchronous > "$test_output_file" 2>&1
+
+    local test_exit_code=$?
+
+    if [[ $test_exit_code -eq 0 ]]; then
+        echo "  ✓ Test completed successfully"
+
+        # Wait a moment for logs to be available
+        sleep 2
+
+        # Get the most recent debug logs (should include our test)
+        echo "  Retrieving debug logs..."
+        sf apex get log --number 1 > "$log_output_file" 2>&1
+
+        echo "  ✓ Logs collected"
+    else
+        echo "  ✗ Test failed with exit code $test_exit_code"
+        if [[ -f "$test_output_file" ]]; then
+            echo "  Error details:"
+            tail -5 "$test_output_file" | sed 's/^/    /'
+        fi
+    fi
+
+    echo ""  # Empty line for readability
+}
+
+# Function to parse all collected logs and build CSV
+parse_all_logs_and_build_csv() {
+    echo "Parsing all collected logs..."
+
+    for test_class in "${test_classes[@]}"; do
+        local test_class_no_ext="${test_class%.cls}"
+        local test_output_file="$TEMP_LOG_DIR/${test_class_no_ext}_output.txt"
+        local log_output_file="$TEMP_LOG_DIR/${test_class_no_ext}_logs.txt"
+
+        echo "  Processing logs for: $test_class_no_ext"
+
+        # Determine which log source to use
+        local combined_output=""
+
+        # Check fetched logs for debug statements (prioritize log over test output)
+        if [[ -f "$log_output_file" ]]; then
+            combined_output=$(cat "$log_output_file")
+        fi
+
+        # If no Benchmarker data in logs, check test output as fallback
+        if [[ "$combined_output" != *"Benchmarker:"* ]] && [[ -f "$test_output_file" ]]; then
+            combined_output=$(cat "$test_output_file")
+        fi
+
+        # Check if we found any Benchmarker data
+        if [[ "$combined_output" == *"Benchmarker:"* ]]; then
+            echo "    ✓ Found Benchmarker data"
+            extract_benchmarker_data "$combined_output" "$test_class_no_ext"
+        else
+            echo "    ⚠ No Benchmarker data found"
+            # For debugging, save the combined output
+            echo "$combined_output" > "$TEMP_LOG_DIR/${test_class_no_ext}_debug.txt"
+        fi
+    done
+}
+
+#### MAIN SCRIPT EXECUTION ########################################################################
+
+# Check if user wants to run a limited number of tests for testing
+if [[ "$1" == "--limit" ]] && [[ -n "$2" ]]; then
+    TEST_LIMIT="$2"
+    echo "Limiting execution to first $TEST_LIMIT test classes"
+else
+    TEST_LIMIT=""
+fi
+
+# 0. Reset the Step Message counter
+resetStepMsgCounter 4
+
+# 1. Find all test classes
+echoStepMsg "Finding all Apex test classes"
+cd "$PROJECT_ROOT"
+
+# Find all *Test*.cls files in the classes directory
+test_classes=()
+while IFS= read -r -d '' file; do
+    test_classes+=("$(basename "$file")")
+done < <(find force-app/main/default/classes -name "*Test*.cls" -type f -print0)
+
+echo "Found ${#test_classes[@]} test classes"
+
+# Limit the number of test classes if requested
+if [[ -n "$TEST_LIMIT" ]]; then
+    test_classes=("${test_classes[@]:0:$TEST_LIMIT}")
+    echo "Limited to first ${#test_classes[@]} test classes for testing"
+fi
+
+# 2. Run each test class individually and collect logs
+echoStepMsg "Running test classes individually and collecting logs"
+
+for test_class in "${test_classes[@]}"; do
+    run_test_and_collect_logs "$test_class"
+    # Small delay to ensure logs are available
+    sleep 1
+done
+
+# 3. Parse all collected logs and build CSV
+echoStepMsg "Parsing all collected logs and building CSV"
+parse_all_logs_and_build_csv
+
+# 4. Report results
+echoStepMsg "Benchmarker data collection complete"
+
+echo "Results saved to: $OUTPUT_FILE"
+echo "Temporary files saved to: $TEMP_LOG_DIR"
+
+# Show a preview of the results
+echo ""
+echo "Preview of results:"
+head -10 "$OUTPUT_FILE"
+
+line_count=$(wc -l < "$OUTPUT_FILE")
+echo ""
+echo "Total rows in CSV (including header): $line_count"
+
+#### ECHO CLOSING SUCCESS MESSAGE ##################################################################
+echoScriptCompleteMsg "Benchmarker data collection complete. Results available in $OUTPUT_FILE"
+
+##END##

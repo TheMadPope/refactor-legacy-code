@@ -19,7 +19,9 @@ public class RecordTypeServiceTest{
     @IsTest
     private static void itShouldgetRecordTypeList(){
         Test.startTest();
+        Benchmarker.start();
         List<RecordType> recordtypeList = RecordTypeService.getRecordTypeList(VALID_OBJECT_WITH_RECORDTYPES_IN_THIS_ORG);
+        Benchmarker.mark('itShouldgetRecordTypeList');
         Test.stopTest();
 
         Map<String, RecordTypeInfo> control = Schema.getGlobalDescribe().get(VALID_OBJECT_WITH_RECORDTYPES_IN_THIS_ORG).getDescribe().getRecordTypeInfosByDeveloperName();
