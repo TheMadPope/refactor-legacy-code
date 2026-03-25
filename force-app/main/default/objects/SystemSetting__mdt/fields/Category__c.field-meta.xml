@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Category__c</fullName>
+    <description>This field lets you group settings together, helping this simple setting object to be used for multiple purposes.</description>
+    <fieldManageability>SubscriberControlled</fieldManageability>
+    <label>Category</label>
+    <required>true</required>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Feature Activation</fullName>
+                <default>true</default>
+                <label>Feature Activation</label>
+            </value>
+            <value>
+                <fullName>Feature Version</fullName>
+                <default>false</default>
+                <label>Feature Version</label>
+            </value>
+            <value>
+                <fullName>Trigger Action Disable</fullName>
+                <default>false</default>
+                <label>Trigger Action Disable</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

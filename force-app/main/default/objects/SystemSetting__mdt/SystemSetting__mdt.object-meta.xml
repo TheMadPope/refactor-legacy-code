@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Centralized Custom Metadata Type to store settings to be used across the org.</description>
+    <label>System Setting</label>
+    <pluralLabel>System Settings</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>
