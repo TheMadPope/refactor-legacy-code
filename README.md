@@ -36,9 +36,11 @@ One way to think of these strategies is to get us to write in plain, understanda
 **A**: I find it much easier to read. Each clause starts a new line, aligned with the previous. If I have an OR, I will line that up so that it is easier to read, as well.
 Check out an example in the AccountSelector class.
 
+
 **Q**: Looks like the TestFactory methods... are alphabetical?
 
 **A**: *blushes* Yeah, that would be me. I find that trying to keep an Apex (or Javascript) class alphabetical makes it much easier to find what I'm looking for! In this example, I've even included alphabetical REGION comments in the TestFactory class - including END REGION markings (I don't typically include those, just wanted you to see them). I think Regions, and alphabetical method ordering, make things much more tidy. Maybe that makes me old school. BUT ALSO it introduces one more layer of structure so that code that I commit will look SO VERY CLOSE to code that you commit. Having a measure of code homogeneity (sometimes boringly called House Style) will make your code reviews faster, will improve collaboration, and ultimately increase your team's velocity.
+
 
 **Q**: But I don't wanna write a ton of Apex tests for my code! I just want to hit 75% and call it a day!!!
 
