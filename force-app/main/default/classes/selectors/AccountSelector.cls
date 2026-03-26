@@ -9,21 +9,27 @@ public inherited sharing class AccountSelector {
      * Personally, I like to have nearly all queries in a selector.
      */
     public List<Account> getAccountsBySource(String source){
-        return [SELECT Id, Name FROM Account WHERE AccountSource = :source];
+        return [SELECT Id, Name
+                FROM Account\
+                WHERE AccountSource = :source];
     }
 
     public static void whenNotToUseASelector(){
         //First off, here's what you WOULD use a selector.
         /*START*/
         //do things
-        List<Account> accountsWithAdvertisementSource = [SELECT Id, Name FROM Account WHERE AccountSource = 'Advertisement'];
+        List<Account> accountsWithAdvertisementSource = [SELECT Id, Name
+                                                         FROM Account
+                                                         WHERE AccountSource = 'Advertisement'];
         //do other things
         /*END*/
         //Pretty straightforward.
 
         //Here's where you should NOT use a selector.
         /*START*/
-        for (Account record :[SELECT Id, Name FROM Account WHERE AccountSource = 'Advertisement']){
+        for (Account record :[SELECT Id, Name
+                              FROM Account
+                              WHERE AccountSource = 'Advertisement']){
             //do things
         }
         /*END*/
@@ -33,5 +39,28 @@ public inherited sharing class AccountSelector {
         * Now, if you KNOW that there's a limited set, like [SELECT Name FROM BaskinRobbinsFlavors__c], then it's
         * probably safe to move into a Selector method.
         */
+    }
+
+    public static void queryFormattingExample(){
+        List<Account> records = [SELECT Id, Name
+                                 FROM Account
+                                 WHERE AccountSource = 'Advertisement'
+                                 AND (Name='Example' OR Name='Test')];
+        /* Now, that's maybe not the BEST example, because who would do that query?
+         * But the multiline formatting helps with readability.
+         * If the SELECT clause has too many fields, then I will continue that to a new line as well.
+         * Always with ID first, then alphabetically, like: SELECT Id, Apple__c, Banana__c...
+         *
+         * NOTE! Don't be a jerk about it. Do what works for you and your team!
+         * I've also seen the below as a preference, and SURE YOU DO YOU!
+         */
+
+        List<Account> records2 = [
+            SELECT Id, Name
+            FROM Account
+            WHERE AccountSource = 'Advertisement'
+            AND (Name='Example' OR Name='Test')
+        ];
+
     }
 }

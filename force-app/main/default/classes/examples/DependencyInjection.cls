@@ -50,7 +50,10 @@ public without sharing abstract class DependencyInjection {
       * I mean, that's fine, go ahead and do that! But allow us to pass in the value for testing.
       */
     public static void notRefactoredMethod(List<SObject> newRecords){
-        SystemSetting__mdt setting = [SELECT Id, Name, Value__c FROM SystemSetting__mdt WHERE Name = 'MySetting' LIMIT 1];
+        SystemSetting__mdt setting = [SELECT Id, DeveloperName, Value__c
+                                      FROM SystemSetting__mdt
+                                      WHERE Name = 'MySetting'
+                                      LIMIT 1];
         if (setting.Value__c == 'valueA'){
             //do some things
         } else if (setting.Value__c == 'valueB'){
@@ -72,7 +75,10 @@ public without sharing abstract class DependencyInjection {
     private static void refactoredMethod(List<SObject> newRecords, SystemSetting__mdt setting){
         if (setting == null){
             //In reality I'd be getting this from a Service method
-            setting = [SELECT Id, Name, Value__c FROM SystemSetting__mdt WHERE Name = 'MySetting' LIMIT 1];
+            setting = [SELECT Id, DeveloperName, Value__c
+                       FROM SystemSetting__mdt
+                       WHERE Name = 'MySetting'
+                       LIMIT 1];
         }
         if (setting.Value__c == 'valueA'){
             //do some things

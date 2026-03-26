@@ -134,7 +134,6 @@ public without sharing abstract class SystemSettingService{
         return getByCategory(category, null);
     }
 
-
     /**
      * @description: Get a list of SystemSetting__mdt records for a specified category.
      * Private method, TestVisible, to allow dependency injection.

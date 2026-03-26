@@ -1,6 +1,8 @@
 
 @IsTest
-public abstract class TestFactory{
+public class TestFactory{
+
+    //REGION A
 
     /**
      * Builds an sObject using the parameters provided (or defaults); Optionally inserts the record
@@ -28,6 +30,10 @@ public abstract class TestFactory{
         }
         return result;
     }
+
+    //END REGION A
+
+    //REGION C
 
     /**
      * OVERLOAD: Builds an sObject using the defaults; Optionally inserts the record
@@ -67,6 +73,10 @@ public abstract class TestFactory{
         return result;
     }
 
+    //END REGION C
+
+    //REGION G
+
     /**
      * Generates a fake Id that is valid for the given object
      * @param objectType (Schema.SObjectType): The object type to use
@@ -76,6 +86,10 @@ public abstract class TestFactory{
         String result = String.valueOf(randomSeed++);
         return objectType.getDescribe().getKeyPrefix() + '0'.repeat(12-result.length()) + result;
     }
+
+    //END REGION G
+
+    //REGION R
 
     /**
      * Used by random methods to ensure uniqueness
@@ -94,6 +108,10 @@ public abstract class TestFactory{
         }
         return stagingKey.substring(0, length).toLowerCase();
     }
+
+    //END REGION R
+
+    //REGION S
 
     /**
      * Builds a Custom Metadata record using the parameters provided (or defaults); Optionally inserts the record
@@ -114,4 +132,6 @@ public abstract class TestFactory{
         SystemSetting__mdt result = (SystemSetting__mdt) JSON.deserialize(JSON.serialize(parameters), Type.forName('SystemSetting__mdt'));
         return result;
     }
+
+    //END REGION S
 }

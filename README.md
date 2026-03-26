@@ -22,6 +22,25 @@ Dependency injection is a lifesaver for testing (resulting in reliable code!) an
 
 If you feel that you *must* use a robot, keep them on a short leash! Use them for atomic actions, like "Please turn thisVariable into a class-level static variable with lazy loading". I've included an example copilot-instructions.md file in the .github folder. Modify as you wish! Also, the robots tend to be good at helping to refine your copilot-instructions.md file (or whatever flavor of robot config file you use).
 
+Keep in mind that ALL of these strategies are intended to accelerate your development.
+/Every line of code is a liability/
+/If you're writing all new code, you're doing it wrong/
+Once you've built out a structured, well, infrastructure of reusable code, you will find that NEW development takes fewer and fewer lines. You'll find yourself typing a method that doesn't exist (yet), like: List<Accounts> accountsForZipCode = AccountSelector.getByZipCode('97213')... Then when the compiler comes back to complain that the method doesn't exist, you can VERY QUICKLY go to the AccountSelector, write a VERY predictable and simple new method, whip up a super fast test class with positive and negative tests, and you're off to lunch with not only your problem solved, but you know that NEXT TIME you need accounts by zip code, you can just write those words and POOF.
+
+One way to think of these strategies is to get us to write in plain, understandable language. This will rapidly accelerate your development, even if it takes some time to build those skills and/or that codebase.
+
+# Errata
+
+Q: Your queries are almost all multi-line, why is that?
+A: I find it much easier to read. Each clause starts a new line, aligned with the previous. If I have an OR, I will line that up so that it is easier to read, as well.
+Check out an example in the AccountSelector class.
+
+Q: Looks like the TestFactory methods... are alphabetical?
+A: *blushes* Yeah, that would be me. I find that trying to keep an Apex (or Javascript) class alphabetical makes it much easier to find what I'm looking for! In this example, I've even included alphabetical REGION comments in the TestFactory class - including END REGION markings (I don't typically include those, just wanted you to see them). I think Regions, and alphabetical method ordering, make things much more tidy. Maybe that makes me old school. BUT ALSO it introduces one more layer of structure so that code that I commit will look SO VERY CLOSE to code that you commit. Having a measure of code homogeneity (sometimes boringly called House Style) will make your code reviews faster, will improve collaboration, and ultimately increase your team's velocity.
+
+Q: But I don't wanna write a ton of Apex tests for my code! I just want to hit 75% and call it a day!!!
+A: You're better than that! Also, in the current landscape, the robots are VERY GOOD at Apex Tests. And if you've properly structured your code along these guidelines, and included a robot instructions file like ./.github/copilot-instructions.md, your robot is going to be VERY GOOD at writing atomic Apex tests (in my experience). Obviously, you'll still want to carefully verify what it's imagining the words should be, and make sure that it's following your style properly. Don't Trust, Also Verify!
+
 # Further Reading
 
 * A lightweight trigger framework [here](https://github.com/TheMadPope/Lighter-Weight-Trigger-Framework)
