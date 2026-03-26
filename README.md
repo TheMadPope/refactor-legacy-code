@@ -2,6 +2,10 @@
 
 This is a companion repo hosting some examples of common refactoring approaches. Please feel free to [reach out to me](mailto:richard@thetransformationgroup.io) with any questions, I love to talk about this stuff!
 
+# Reading this repo
+
+I recommend you start with going through this file, then explore ./force-app/main/default/classes/examples/RefactorExamples.cls. That will give you an overview of easy to apply refactoring strategies without trying to wrap your brain around spaghetti code. From there, the code should lead you into exploring other Classes automatically.
+
 # Refactor Approach
 
 The approach for which I advocate is simple: Rename, Reduce, Repeat. And avoid complex patterns. And make it readable. And don't get distracted by the big picture - you don't NEED to know what the code is /supposed/ to be doing, because you can see what the code /is/ doing! In fact, trying to understand the code will often distract you from the important work of refactoring. Instantiate those variables closer to use! Invert those IFs! Clarify and normalize conditionals and 'feature flags'! And and and ... ! (this paragraph should be refactored.)
@@ -18,6 +22,7 @@ Dependency injection is a lifesaver for testing (resulting in reliable code!) an
 
 If you feel that you *must* use a robot, keep them on a short leash! Use them for atomic actions, like "Please turn thisVariable into a class-level static variable with lazy loading". I've included an example copilot-instructions.md file in the .github folder. Modify as you wish! Also, the robots tend to be good at helping to refine your copilot-instructions.md file (or whatever flavor of robot config file you use).
 
-Consider checking out a lightweight trigger framework [here](https://github.com/TheMadPope/Lighter-Weight-Trigger-Framework)
+# Further Reading
 
-Consider checking out a handy sfdx project template [here](https://github.com/TheMadPope/phoenix-project-template)
+* A lightweight trigger framework [here](https://github.com/TheMadPope/Lighter-Weight-Trigger-Framework)
+* A handy sfdx project template [here](https://github.com/TheMadPope/phoenix-project-template)
