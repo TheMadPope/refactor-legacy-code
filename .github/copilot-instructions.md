@@ -38,9 +38,7 @@ public static void createTacoReminders(Map<Id, Taco__c> tacoById) {
         tasksToInsert.add(reminderTask);
     }
 
-    if (!tasksToInsert.isEmpty()) {
-        Database.insert(tasksToInsert);
-    }
+    Database.insert(tasksToInsert);
 }
 
 // ❌ INCORRECT: Duplicates logic from createTask()
@@ -85,7 +83,7 @@ Service methods belong to the class representing the **object being modified**, 
 1. **Extend base class**: `./force-app/main/default/classes/utility/TriggerHandler.cls`
    - Reference: `ContactTrigger`
 2. **Delegate to Service classes**: Use composed methods, pass records to Service
-   - Reference: `./force-app/main/default/classes/triggerHandlers/QuizQuestionTriggerHandler.cls`
+   - Reference: `./force-app/main/default/classes/triggerHandlers/AccountTriggerHandler.cls`
 3. **Register all events**: Attach triggers to ALL events (before/after insert/update/delete/undelete)
 4. **Location**: `./force-app/main/default/triggers/bridge/`
 5. **One-line handler invocation**: Instantiate and call `.run()` in a single statement
@@ -94,7 +92,7 @@ Service methods belong to the class representing the **object being modified**, 
 
 **Example trigger:**
 ```apex
-trigger ContactTrigger on Contact (after delete, after insert, after update, after undelete, before delete, before insert, before update){
+trigger ContactTrigger on Contact (before insert, after insert, before update, after update, before delete, after delete, after undelete){
     new ContactTriggerHandler().run();
 }
 ```
@@ -107,7 +105,6 @@ trigger ContactTrigger on Contact (after delete, after insert, after update, aft
 
 - **Apex classes**: `./force-app/main/default/classes/[subfolder]/`
   - Subfolders: `triggerHandlers/`, `services/`, `selectors/`, `utilities/`, etc.
-- **Triggers**: `./force-app/main/default/triggers/bridge/`
 
 ### Method Organization and Style
 
@@ -162,7 +159,7 @@ Before modifying trigger/service/selector code:
    - Test the method's logic in isolation
    - Example:
      ```apex
-     @isTest
+     @IsTest
      private static void itShouldAddErrorWhenEmailIsNull() {
          Contact contactRecord = TestFactory.contactBuild(new Map<String, Object>{'Email' => null}, false);
          List<Contact> contacts = new List<Contact>{ contactRecord };
@@ -181,7 +178,7 @@ Before modifying trigger/service/selector code:
    - Verify the method works correctly when called through triggers
    - Example:
      ```apex
-     @isTest
+     @IsTest
      private static void itShouldPreventInsertOfContactWithoutEmail() {
          Contact contactRecord = TestFactory.contactBuild(new Map<String, Object>{'Email' => null}, false);
 
