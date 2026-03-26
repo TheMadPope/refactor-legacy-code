@@ -1,0 +1,260 @@
+#!/bin/bash
+####################################################################################################
+#
+# FILENAME:     instrument-benchmarker-in-tests
+#
+# PURPOSE:      For each Apex test method (@isTest / testMethod) in all .cls files, insert
+#               Benchmarker.start() and Benchmarker.mark() calls:
+#               - If the method does NOT already use Benchmarker.mark:
+#                   - If it uses Test.startTest() / Test.stopTest():
+#                       - Insert Benchmarker.start(); on a new line just after Test.startTest();
+#                       - Insert Benchmarker.mark('methodName'); on a new line just after Test.stopTest();
+#                   - If it does NOT use Test.startTest():
+#                       - Insert Benchmarker.start(); as the first statement inside the method body
+#                       - Insert Benchmarker.mark('methodName'); as the last statement before the
+#                         closing brace of the method
+#
+# INSTRUCTIONS: Execute the following command from the root of your SFDX project directory.
+#               ./dev-tools/scripts/instrument-benchmarker-in-tests
+#
+####################################################################################################
+
+# Make sure that the shared-functions.sh script exists.
+if [ ! -r `dirname $0`/lib/shared-functions.sh ]; then
+  echo "\nFATAL ERROR: `tput sgr0``tput setaf 1`Could not load dev-tools/lib/shared-functions.sh.  File not found.\n"
+  exit 1
+fi
+
+# Indicate the operation being carried out by this script.
+REQUESTED_OPERATION="instrument-benchmarker-in-tests"
+
+# Load the shared-functions.sh library.  This action will also cause the
+# config variables from dev-tools/lib/local-config.sh to be loaded.
+source `dirname $0`/lib/shared-functions.sh
+
+confirmWithAbort "Add Benchmarker instrumentation to all test methods (this will NOT deploy)?"
+echo_blank_lines 1
+echo "Processing..."
+echo "Be sure to review all changes before deploying, there are some edge cases this script does not handle."
+echo_blank_lines 1
+CHANGED_COUNT=0
+SKIPPED_COUNT=0
+
+# Use process substitution so the while loop runs in the current shell (preserves counters)
+while read -r clsfile; do
+
+    # Skip the Benchmarker class itself
+    if [[ "$clsfile" == *"Benchmarker.cls" ]]; then
+        continue
+    fi
+
+    # Quick check: does this file contain @isTest or testMethod at all? If not, skip.
+    if ! grep -qiE '@isTest|testMethod' "$clsfile"; then
+        continue
+    fi
+
+    # =====================================================================================
+    # AWK program — simple 3-state machine:
+    #   NORMAL (state 0)       – printing lines, watching for @isTest or testMethod
+    #   SEEKING_BRACE (state 1)– buffering lines after trigger, looking for first {
+    #   IN_METHOD (state 2)    – inside the method body, tracking brace depth to find end
+    # =====================================================================================
+    awk '
+    BEGIN {
+        state         = 0   # 0=NORMAL, 1=SEEKING_BRACE, 2=IN_METHOD
+        methodName    = ""
+        braceDepth    = 0
+        hasStartTest  = 0
+        hasMark       = 0
+        bufN          = 0
+        firstBraceLine = 0  # buf index of the line containing the opening {
+    }
+
+    # ---- count net braces on a line ----
+    function countBraces(line,    i, c, n) {
+        n = 0
+        for (i = 1; i <= length(line); i++) {
+            c = substr(line, i, 1)
+            if (c == "{") n++
+            else if (c == "}") n--
+        }
+        return n
+    }
+
+    # ---- get leading whitespace ----
+    function getIndent(line) {
+        match(line, /^[ \t]*/)
+        return substr(line, RSTART, RLENGTH)
+    }
+
+    # ---- check if a line contains word "class" as a token (not inside another word) ----
+    function hasWordClass(line,    words, wn, wi) {
+        wn = split(tolower(line), words, /[^a-zA-Z0-9_]+/)
+        for (wi = 1; wi <= wn; wi++) {
+            if (words[wi] == "class") return 1
+        }
+        return 0
+    }
+
+    # ---- extract method name from buffered lines (word before "(" on the void line) ----
+    function extractMethodName(    j, lj, tmp) {
+        for (j = 1; j <= bufN; j++) {
+            lj = tolower(buf[j])
+            if (lj ~ /void[[:space:]]+[a-z_]/ && buf[j] ~ /\(/) {
+                tmp = buf[j]
+                # strip annotation params like @isTest(SeeAllData=true)
+                gsub(/@[a-zA-Z]+\([^)]*\)/, "", tmp)
+                # take the word between "void " and "("
+                sub(/.*[Vv][Oo][Ii][Dd][[:space:]]+/, "", tmp)
+                sub(/[[:space:]]*\(.*/, "", tmp)
+                methodName = tmp
+                return
+            }
+        }
+        methodName = "unknown"
+    }
+
+    # ---- flush the buffered method, inserting Benchmarker calls ----
+    function flushMethod(    i, indent) {
+        if (hasMark) {
+            # Already instrumented — print as-is
+            for (i = 1; i <= bufN; i++) print buf[i]
+        } else if (hasStartTest) {
+            # Case A: has Test.startTest / Test.stopTest
+            for (i = 1; i <= bufN; i++) {
+                print buf[i]
+                if (tolower(buf[i]) ~ /test\.starttest[[:space:]]*\(/) {
+                    indent = getIndent(buf[i])
+                    print indent "Benchmarker.start();"
+                }
+                if (tolower(buf[i]) ~ /test\.stoptest[[:space:]]*\(/) {
+                    indent = getIndent(buf[i])
+                    print indent "Benchmarker.mark(\047" methodName "\047);"
+                }
+            }
+        } else {
+            # Case B: no Test.startTest — insert at method open / close
+            for (i = 1; i <= bufN; i++) {
+                if (i == firstBraceLine) {
+                    print buf[i]
+                    indent = getIndent(buf[i])
+                    if (indent == "") indent = "    "
+                    else indent = indent "    "
+                    print indent "Benchmarker.start();"
+                } else if (i == bufN) {
+                    indent = getIndent(buf[i])
+                    if (indent == "") indent = "    "
+                    else indent = indent "    "
+                    print indent "Benchmarker.mark(\047" methodName "\047);"
+                    print buf[i]
+                } else {
+                    print buf[i]
+                }
+            }
+        }
+        # Reset
+        state = 0; bufN = 0; methodName = ""; braceDepth = 0
+        hasStartTest = 0; hasMark = 0; firstBraceLine = 0
+    }
+
+    # ===== STATE 2: IN_METHOD — buffer lines until braceDepth returns to 0 =====
+    state == 2 {
+        bufN++; buf[bufN] = $0
+        if (tolower($0) ~ /test\.starttest[[:space:]]*\(/) hasStartTest = 1
+        if (tolower($0) ~ /test\.stoptest[[:space:]]*\(/)  hasStartTest = 1
+        if ($0 ~ /Benchmarker\.mark[[:space:]]*\(/)        hasMark = 1
+        braceDepth += countBraces($0)
+        if (braceDepth == 0) {
+            extractMethodName()
+            flushMethod()
+        }
+        next
+    }
+
+    # ===== STATE 1: SEEKING_BRACE — looking for the opening { of the method =====
+    state == 1 {
+        bufN++; buf[bufN] = $0
+
+        # If we hit "class", this was a class-level @isTest — dump buffer and reset
+        if (hasWordClass($0)) {
+            for (i = 1; i <= bufN; i++) print buf[i]
+            state = 0; bufN = 0
+            next
+        }
+
+        # Look for the opening brace
+        if ($0 ~ /\{/) {
+            firstBraceLine = bufN
+            braceDepth = countBraces($0)
+            # Also scan features on this line
+            if (tolower($0) ~ /test\.starttest[[:space:]]*\(/) hasStartTest = 1
+            if (tolower($0) ~ /test\.stoptest[[:space:]]*\(/)  hasStartTest = 1
+            if ($0 ~ /Benchmarker\.mark[[:space:]]*\(/)        hasMark = 1
+
+            if (braceDepth > 0) {
+                state = 2
+            } else {
+                # Brace opened and closed on same line — flush immediately
+                extractMethodName()
+                flushMethod()
+            }
+        }
+        next
+    }
+
+    # ===== STATE 0: NORMAL — looking for @isTest or testMethod trigger =====
+    {
+        low = tolower($0)
+
+        # Detect method-level @isTest (not class-level) or testMethod keyword
+        if ((low ~ /@istest/ && !hasWordClass($0)) ||
+            (low ~ /testmethod/ && !hasWordClass($0))) {
+
+            # Start buffering
+            state = 1
+            bufN = 1; buf[1] = $0
+            braceDepth = 0; hasStartTest = 0; hasMark = 0; firstBraceLine = 0
+
+            # The opening brace might be on this same line (e.g. "@isTest static void foo() {")
+            if ($0 ~ /\{/) {
+                firstBraceLine = 1
+                braceDepth = countBraces($0)
+                if (tolower($0) ~ /test\.starttest[[:space:]]*\(/) hasStartTest = 1
+                if (tolower($0) ~ /test\.stoptest[[:space:]]*\(/)  hasStartTest = 1
+                if ($0 ~ /Benchmarker\.mark[[:space:]]*\(/)        hasMark = 1
+
+                if (braceDepth > 0) {
+                    state = 2
+                } else {
+                    extractMethodName()
+                    flushMethod()
+                }
+            }
+            next
+        }
+
+        # Regular line — just print
+        print $0
+    }
+
+    END {
+        # Flush anything still buffered
+        if (state == 2) { extractMethodName(); flushMethod() }
+        else if (bufN > 0) { for (i = 1; i <= bufN; i++) print buf[i] }
+    }
+    ' "$clsfile" > "$clsfile.tmp"
+
+    # Only replace if the file actually changed
+    if ! diff -q "$clsfile" "$clsfile.tmp" > /dev/null 2>&1; then
+        mv "$clsfile.tmp" "$clsfile"
+        echo "  Instrumented: $clsfile"
+        CHANGED_COUNT=$((CHANGED_COUNT + 1))
+    else
+        rm -f "$clsfile.tmp"
+        SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+    fi
+
+done < <(find . -type f -name '*.cls')
+
+echo ""
+echo "Done. Files instrumented: $CHANGED_COUNT,  Unchanged: $SKIPPED_COUNT"

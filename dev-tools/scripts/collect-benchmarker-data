@@ -1,15 +1,15 @@
 #!/bin/bash
 ####################################################################################################
 #
-# FILENAME:     collect_benchmarker_data
+# FILENAME:     collect-benchmarker-data
 #
 # PURPOSE:      Runs individual Apex tests and collects Benchmarker debug output into CSV
 #
 # INSTRUCTIONS: Execute the following command relative to your project's root directory:
-#               ./dev-tools/scripts/collect_benchmarker_data
+#               ./dev-tools/scripts/collect-benchmarker-data
 #
 #               To test with just the first N test classes:
-#               ./dev-tools/scripts/collect_benchmarker_data --limit N
+#               ./dev-tools/scripts/collect-benchmarker-data --limit N
 #
 
 #### LOAD SHARED FUNCTIONS LIBRARY ################################################################
@@ -44,6 +44,9 @@ source "$lib_path"
 
 #### CONFIRM SCRIPT EXECUTION ######################################################################
 confirmWithAbort "Do you want to run all test classes individually and collect Benchmarker data?"
+echo_blank_lines 1
+echo "Processing..."
+echo_blank_lines 1
 
 #### CREATE LOCAL VARIABLES ########################################################################
 OUTPUT_FILE="$PROJECT_ROOT/benchmarker_results.csv"

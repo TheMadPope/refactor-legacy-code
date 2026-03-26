@@ -33,13 +33,27 @@ public without sharing abstract class DependencyInjection {
         //do the other thing
     }
 
+    /**
+     * But what if the target method is being used elsewhere, without the switch?
+     * In that case, introduce a private method. So:
+     * keep:
+     * public static void doTheThing(List<SObject> newRecords)...
+     * This just does the thing.
+     *
+     * add:
+     * public static void doTheThingIfEnabled(List<SObject> newRecords, Boolean isActionEnabled)...
+     * This checks the setting and (if enabled) calls doTheThing
+     */
+
      /*
       * Another common issue that I see is invoking Custom Metadata inside a method.
       * I mean, that's fine, go ahead and do that! But allow us to pass in the value for testing.
       */
-
     public static void notRefactoredMethod(List<SObject> newRecords){
-        SystemSetting__mdt setting = [SELECT Id, Name, Value__c FROM SystemSetting__mdt WHERE Name = 'MySetting' LIMIT 1];
+        SystemSetting__mdt setting = [SELECT Id, DeveloperName, Value__c
+                                      FROM SystemSetting__mdt
+                                      WHERE Name = 'MySetting'
+                                      LIMIT 1];
         if (setting.Value__c == 'valueA'){
             //do some things
         } else if (setting.Value__c == 'valueB'){
@@ -51,7 +65,7 @@ public without sharing abstract class DependencyInjection {
         //Even worse, you often see: if (Test.isRunningTest())... which I see as a red flag for refactoring.
     }
 
-    //OK, so notice that we just go directly to the private. This way the public signature remains
+    //OK, so notice that we just go directly to the private method. This way the public signature remains
     //secure, no one is going to pass in a SystemSetting__mdt record in production code, but we can in tests!
     public static void refactoredMethod(List<SObject> newRecords){
         refactoredMethod(newRecords, null);
@@ -59,10 +73,13 @@ public without sharing abstract class DependencyInjection {
 
     @TestVisible
     private static void refactoredMethod(List<SObject> newRecords, SystemSetting__mdt setting){
-    if (setting == null){
-        //In reality I'd be getting this from a Service method
-        setting = [SELECT Id, Name, Value__c FROM SystemSetting__mdt WHERE Name = 'MySetting' LIMIT 1];
-    }
+        if (setting == null){
+            //In reality I'd be getting this from a Service method
+            setting = [SELECT Id, DeveloperName, Value__c
+                       FROM SystemSetting__mdt
+                       WHERE Name = 'MySetting'
+                       LIMIT 1];
+        }
         if (setting.Value__c == 'valueA'){
             //do some things
         } else if (setting.Value__c == 'valueB'){
