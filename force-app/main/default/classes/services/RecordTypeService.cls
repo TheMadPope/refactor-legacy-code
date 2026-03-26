@@ -30,6 +30,28 @@ public abstract without sharing class RecordTypeService{
     }
 
     /**
+    * Returns a cached Map<String, Id>
+    * @param cacheKey (String): The key by which the data is stored in the cache
+    * @return Map<String, Id>: requested data
+    */
+    @testVisible
+    private static Map<Id, String> getFromCacheMapIdString(String cacheKey){
+        object result = cache.get(cacheKey);
+        return result==null ? null : (Map<Id, String>)result;
+    }
+
+    /**
+    * Returns a cached Map<String, Id>
+    * @param cacheKey (String): The key by which the data is stored in the cache
+    * @return Map<String, Id>: requested data
+    */
+    @testVisible
+    private static Map<String, Id> getFromCacheMapStringId(String cacheKey){
+        object result = cache.get(cacheKey);
+        return result==null ? null : (Map<String, Id>)result;
+    }
+
+    /**
     * Returns a cached RecordType
     * @param cacheKey (String): The key by which the data is stored in the cache
     * @return RecordType: requested data
@@ -49,39 +71,6 @@ public abstract without sharing class RecordTypeService{
     private static List<RecordType> getFromCacheRecordTypeList(String cacheKey){
         object result = cache.get(cacheKey);
         return result==null ? null : (List<RecordType>)result;
-    }
-
-    /**
-    * Returns a cached Map<String, Id>
-    * @param cacheKey (String): The key by which the data is stored in the cache
-    * @return Map<String, Id>: requested data
-    */
-    @testVisible
-    private static Map<String, Id> getFromCacheMapStringId(String cacheKey){
-        object result = cache.get(cacheKey);
-        return result==null ? null : (Map<String, Id>)result;
-    }
-
-    /**
-    * Returns a cached Map<String, Id>
-    * @param cacheKey (String): The key by which the data is stored in the cache
-    * @return Map<String, Id>: requested data
-    */
-    @testVisible
-    private static Map<Id, String> getFromCacheMapIdString(String cacheKey){
-        object result = cache.get(cacheKey);
-        return result==null ? null : (Map<Id, String>)result;
-    }
-
-    /**
-    * Gets the requested record Type Id
-    * @param objectName (String): The object to examine
-    * @param recordTypeDeveloperName (String): the record type's developer name
-    * @return RecordTypeId: requested data
-    */
-    public static Id getRecordTypeId(String objectName, String recordTypeDeveloperName){
-        //NOTE: Not caching as that (and error handling) is done by the inner method
-        return getRecordType(objectName, recordTypeDeveloperName).Id;
     }
 
     /**
@@ -107,6 +96,17 @@ public abstract without sharing class RecordTypeService{
         }
         cache.put(cacheKey, result);
         return result;
+    }
+
+    /**
+    * Gets the requested record Type Id
+    * @param objectName (String): The object to examine
+    * @param recordTypeDeveloperName (String): the record type's developer name
+    * @return RecordTypeId: requested data
+    */
+    public static Id getRecordTypeId(String objectName, String recordTypeDeveloperName){
+        //NOTE: Not caching as that (and error handling) is done by the inner method
+        return getRecordType(objectName, recordTypeDeveloperName).Id;
     }
 
     /**

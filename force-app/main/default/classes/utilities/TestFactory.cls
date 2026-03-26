@@ -1,23 +1,6 @@
 
 @IsTest
 public abstract class TestFactory{
-    /**
-     * Used by random methods to ensure uniqueness
-     */
-    static integer randomSeed = 1;
-
-    /**
-     * Returns a random string of the specified length
-     * @param length (integer): The length of string to generate
-     * @return String: Random string
-     */
-    public static String randomString(integer length){
-        String stagingKey = String.valueOf(randomSeed++);
-        while (stagingKey.length() < length){
-            stagingKey += EncodingUtil.base64encode(crypto.generateAesKey(192));
-        }
-        return stagingKey.substring(0, length).toLowerCase();
-    }
 
     /**
      * Builds an sObject using the parameters provided (or defaults); Optionally inserts the record
@@ -43,26 +26,6 @@ public abstract class TestFactory{
         if (doInsert){
             Database.insert (result);
         }
-        return result;
-    }
-
-    /**
-     * Builds a Custom Metadata record using the parameters provided (or defaults); Optionally inserts the record
-     * @param parameters (Map<String, object>): Fields to set on the object
-     * @param doInsert (boolean): If TRUE, performs Database.insert
-     * @return SystemSetting__mdt: Created sObject
-     * @notes: Oooh look at that, you can create a Custom Metadat record for use in your testing!
-     *         PLEASE NOTE however that you CANNOT insert Custom Metadata. But this works great for dependency injection
-     */
-    public static SystemSetting__mdt systemSettingBuild(Map<String, object> parameters){
-        if (parameters == null){
-            parameters = new Map<String, object>();
-        }
-        //Add required fields with defaults if not provided in the parameters
-        if (!parameters.containsKey('Name')){
-            parameters.put('Name', 'TestSystemSetting' + randomString(10));
-        }
-        SystemSetting__mdt result = (SystemSetting__mdt) JSON.deserialize(JSON.serialize(parameters), Type.forName('SystemSetting__mdt'));
         return result;
     }
 
@@ -101,6 +64,54 @@ public abstract class TestFactory{
         if (doInsert){
             Database.insert (result);
         }
+        return result;
+    }
+
+    /**
+     * Generates a fake Id that is valid for the given object
+     * @param objectType (Schema.SObjectType): The object type to use
+     * @return String: The fake Id
+     */
+    public static String getFakeId(Schema.SObjectType objectType){
+        String result = String.valueOf(randomSeed++);
+        return objectType.getDescribe().getKeyPrefix() + '0'.repeat(12-result.length()) + result;
+    }
+
+    /**
+     * Used by random methods to ensure uniqueness
+     */
+    static integer randomSeed = 1;
+
+    /**
+     * Returns a random string of the specified length
+     * @param length (integer): The length of string to generate
+     * @return String: Random string
+     */
+    public static String randomString(integer length){
+        String stagingKey = String.valueOf(randomSeed++);
+        while (stagingKey.length() < length){
+            stagingKey += EncodingUtil.base64encode(crypto.generateAesKey(192));
+        }
+        return stagingKey.substring(0, length).toLowerCase();
+    }
+
+    /**
+     * Builds a Custom Metadata record using the parameters provided (or defaults); Optionally inserts the record
+     * @param parameters (Map<String, object>): Fields to set on the object
+     * @param doInsert (boolean): If TRUE, performs Database.insert
+     * @return SystemSetting__mdt: Created sObject
+     * @notes: Oooh look at that, you can create a Custom Metadat record for use in your testing!
+     *         PLEASE NOTE however that you CANNOT insert Custom Metadata. But this works great for dependency injection
+     */
+    public static SystemSetting__mdt systemSettingBuild(Map<String, object> parameters){
+        if (parameters == null){
+            parameters = new Map<String, object>();
+        }
+        //Add required fields with defaults if not provided in the parameters
+        if (!parameters.containsKey('Name')){
+            parameters.put('Name', 'TestSystemSetting' + randomString(10));
+        }
+        SystemSetting__mdt result = (SystemSetting__mdt) JSON.deserialize(JSON.serialize(parameters), Type.forName('SystemSetting__mdt'));
         return result;
     }
 }
