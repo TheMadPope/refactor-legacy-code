@@ -17,3 +17,7 @@ Often enormous legacy methods are really tough to test. By breaking things into 
 Dependency injection is a lifesaver for testing (resulting in reliable code!) and really easy to implement when you have tiny atomic methods. In this repo you'll find a class called DependencyInjection that shows a few examples. There's also a TestFactory class that shows you how to instantiate Custom Metadata records (yes, really) in your test classes.
 
 If you feel that you *must* use a robot, keep them on a short leash! Use them for atomic actions, like "Please turn thisVariable into a class-level static variable with lazy loading". I've included an example copilot-instructions.md file in the .github folder. Modify as you wish! Also, the robots tend to be good at helping to refine your copilot-instructions.md file (or whatever flavor of robot config file you use).
+
+Consider checking out a lightweight trigger framework [here](https://github.com/TheMadPope/Lighter-Weight-Trigger-Framework)
+
+Consider checking out a handy sfdx project template [here](https://github.com/TheMadPope/phoenix-project-template)
