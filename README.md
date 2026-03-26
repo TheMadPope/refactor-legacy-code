@@ -75,7 +75,7 @@ One way to think of these strategies is to get us to write in plain, understanda
 
 ---
 
-## ❓ Errata & FAQ
+## ❓ FAQ
 
 **Q: Your queries are almost all multi-line, why is that?**\
 **A:** I find it much easier to read. Each clause starts a new line, aligned with the previous. If I have an `OR`, I will line that up as well. Check out an example in the `AccountSelector` class.
