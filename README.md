@@ -54,7 +54,7 @@ You don't need them! Lots of data shows they actually slow us down and increase 
 
 If you feel that you *must* use a robot, keep them on a short leash! Use them for atomic actions, like: *"Please turn thisVariable into a class-level static variable with lazy loading."*
 
-* **Configuration:** I've included an example `copilot-instructions.md` file in the `.github` folder. Modify as you wish!
+* **Configuration:** I've included an example `copilot-instructions.md` file in the `.github` folder. Modify as you wish! Also be sure to update any references to actual files, so the robot can find what you're talking about.
 * **Refinement:** Robots are quite good at helping to refine your configuration files.
 * **Verification:** Don't Trust, Also Verify! Always verify what it's imagining the words should be.
 
@@ -84,7 +84,7 @@ One way to think of these strategies is to get us to write in plain, understanda
 **A:** *blushes* Yeah, that would be me. I find that trying to keep an Apex (or Javascript) class alphabetical makes it much easier to find what I'm looking for! In this example, I've even included alphabetical **REGION** comments in the `TestFactory` class - including **END REGION** markings (I don't /typically/ include those, just wanted you to see them). I think Regions, and alphabetical method ordering, make things much more tidy. Maybe that makes me old school. BUT ALSO it introduces one more layer of structure so that code that I commit will look SO VERY CLOSE to code that you commit. Having a measure of code homogeneity (sometimes boringly called House Style) will make your code reviews faster, will improve collaboration, and ultimately increase your team's velocity.
 
 **Q: But I don't wanna write a ton of Apex tests! I just want to hit 75% and call it a day!!!**\
-**A:** You're better than that! Also, in the current landscape, the robots are VERY GOOD at Apex Tests. And if you've properly structured your code along these guidelines, and included a robot instructions file like `./.github/copilot-instructions.md`, your robot is going to be VERY GOOD at writing atomic Apex tests (in my experience). Obviously, you'll still want to carefully verify what it's imagining the words should be, and make sure that it's following your style properly. Don't Trust, Also Verify! Meanwhile, writing the tests yourself shouldn't take too long, because each of your methods should be only a few lines long! A good rule is **if writing the unit test is complicated, you probably need to refactor and simplify further!**
+**A:** You're better than that! Also, in the current landscape, the robots are VERY GOOD at Apex Tests. And if you've properly structured your code along these guidelines, and included an example robot instructions file like `./.github/copilot-instructions.md`, your robot is going to be VERY GOOD at writing atomic Apex tests (in my experience). Obviously, you'll still want to carefully verify what it's imagining the words should be, and make sure that it's following your style properly. Don't Trust, Also Verify! Meanwhile, writing the tests yourself shouldn't take too long, because each of your methods should be only a few lines long! A good rule is **if writing the unit test is complicated, you probably need to refactor and simplify further!**
 
 ---
 
