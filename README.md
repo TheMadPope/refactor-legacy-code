@@ -1,4 +1,4 @@
-# Refactoring Legacy Code: Examples
+# ⚙️ Refactoring Legacy Code ⚙️
 
 This is a companion repo hosting some examples of common refactoring approaches. Please feel free to [reach out to me](mailto:richard@thetransformationgroup.io) with any questions, I love to talk about this stuff!
 
@@ -14,31 +14,31 @@ I recommend you start with going through this file, then explore ./force-app/mai
 
 The approach for which I advocate is simple: **Rename, Reduce, Repeat**. And avoid complex patterns. And make it readable. And don't get distracted by the big picture - you don't NEED to know what the code is *supposed* to be doing, because you can see what the code *is* doing! In fact, trying to understand the code will often distract you from the important work of refactoring.
 
-### Core Strategies:
+### 🗺️ Core Strategies:
 * **Rename everything** until it reads like natural language.
 * **Invert those IFs** to reduce nesting and cognitive complexity.
 * **Instantiate those variables closer to use!** ... because that's wise.
 * **Clarify and normalize** conditionals and "feature flags."
 
-### 1. Preparation & Safety
+### 1. 🦺 Preparation & Safety
 Before starting, ensure that **Apex tests are passing**.
 * **Rule #1:** Modify the tests, *not* the code. Assume the system is functioning as intended (or as we've grown accustomed to). Remember: we are **NOT** modifying functionality.
 * **Baseline Performance:** Use the included `Benchmarker` class to set a baseline for how your org is performing.
 
 > **Pro Tip:** You can use `./dev-tools/scripts/instrument-benchmarker-in-tests` to automatically add Benchmarker calls to your test classes, then use `./dev-tools/scripts/collect-benchmarker-data` to build a CSV of the results.
 
-### 2. Modern Naming Conventions
+### 2. 🏷️ Modern Naming Conventions
 Naming conventions make a big impact, so you should have one! There's an example naming conventions file in this folder (`./naming-conventions.md`). In ye olden days of Apex we would see variable names that were heavily abbreviated, or that included the variable type in the name (lst, map, etc), but we know better now! Names should be descriptive, avoiding acronyms. It should read as natural language.
 * Names should be **descriptive**, avoiding acronyms.
 * Code should read as **natural language** (ish).
 
-### 3. Atomic Methods & Testing
+### 3. 🧪 Atomic Methods & Testing
 Enormous legacy methods are really tough to test. By breaking things into smaller methods, they become easier to test, more reliable, and provide a library of code for later reuse.
 * **Target:** I aim for **<= 15 lines of code per method**, but I don't go crazy about that, I just see if it makes sense at that atomic level.
 * **Avoid the Database:** Wherever possible, avoid hitting the database in your Apex tests. You don't want to age too much while they're running!
 * **Avoid Impersonation:** Don't bother with System.runAs(user) unless the specific user will cause a change in your code's behavior!
 
-### 4. Dependency Injection
+### 4. 💉 Dependency Injection
 This is a lifesaver for testing (resulting in reliable code!) and really easy to implement once you have tiny atomic methods.
 * See the `DependencyInjection` class for examples.
 * See the `TestFactory` class for examples on how to instantiate test data, including **Custom Metadata records** (yes, really), in your test classes.
@@ -46,6 +46,11 @@ This is a lifesaver for testing (resulting in reliable code!) and really easy to
 ---
 
 ## 🤖 Working with the Robots
+
+You don't need them! Lots of data shows they actually slow us down and increase churn.
+(https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html)
+(https://www.gitclear.com/ai_assistant_code_quality_2025_research)
+(https://www.devclass.com/ai-ml/2025/02/20/ai-is-eroding-code-quality-states-new-in-depth-report/1626250)
 
 If you feel that you *must* use a robot, keep them on a short leash! Use them for atomic actions, like: *"Please turn thisVariable into a class-level static variable with lazy loading."*
 
@@ -55,7 +60,7 @@ If you feel that you *must* use a robot, keep them on a short leash! Use them fo
 
 ---
 
-## 💡 The Philosophy: Velocity through Infrastructure
+## 💭 The Philosophy: Velocity through Infrastructure
 
 Keep in mind that ALL of these strategies are intended to accelerate your development.
 * **Every line of code is a liability.**
