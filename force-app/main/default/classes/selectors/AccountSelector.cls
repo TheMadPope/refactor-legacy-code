@@ -1,7 +1,8 @@
  public inherited sharing class AccountSelector {
 
     /**
-     * Notice there's not a crazy overloading framework here. A Selector can be just a place for queries to live.
+     * Notice there's *not* a crazy overloading framework here. A Selector can be just a place for queries to live.
+     * If you have a valid case for a framework, GO FOR IT
      * This mainly increases readability, and, say, to include a new important field in the query
      * anywhere it's invoked.
      * When I'm refactoring I will do a FIND for every query I come across to see if it's repeated.
