@@ -1,4 +1,4 @@
-public inherited sharing class AccountSelector {
+ public inherited sharing class AccountSelector {
 
     /**
      * Notice there's not a crazy overloading framework here. A Selector can be just a place for queries to live.
@@ -8,9 +8,9 @@ public inherited sharing class AccountSelector {
      * Those are the best targets for moving into a Selector.
      * Personally, I like to have nearly all queries in a selector.
      */
-    public List<Account> getAccountsBySource(String source){
+    public List<Account> getBySource(String source){
         return [SELECT Id, Name
-                FROM Account\
+                FROM Account
                 WHERE AccountSource = :source];
     }
 
