@@ -5,6 +5,7 @@ public without sharing abstract class LazyLoading {
      * This leaves it null until it's first invoked, then it uses the Service to populate the value.
      * This can be handy for class level variables that you cannot easily move into a method.
      * I tend to use this approach for record types quite a bit.
+     * And of course note that I'm using the RecordTypeService to get the advantages from that.
      */
     @testVisible
     private static Id RECORDTYPE_ID_ACCOUNT_STANDARD {

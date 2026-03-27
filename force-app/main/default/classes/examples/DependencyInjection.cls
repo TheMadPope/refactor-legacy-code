@@ -89,5 +89,7 @@ public without sharing abstract class DependencyInjection {
         }
         //Now we can EASILY test this method by passing in a SystemSetting__mdt that we built using our TestFactory method
         //You can also test each logical branch easily
+        //Of course, depending on what is happening in each logical branch, those will possibly be their own methods.
+        //Just wanted to show passing in the Custom Metadata as a parameter for testability!
     }
 }
