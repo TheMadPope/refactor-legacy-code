@@ -1,5 +1,5 @@
 @IsTest
-public class ServiceExceptionTest {
+public class SelectorExceptionTest {
     @IsTest
     private static void test(){
         boolean exceptionThrown = false;
