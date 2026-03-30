@@ -8,6 +8,10 @@ This is a companion repo hosting some examples of common refactoring approaches.
 
 I recommend you start with going through this file, then explore ./force-app/main/default/classes/examples/RefactorExamples.cls. That will give you an overview of easy to apply refactoring strategies without trying to wrap your brain around spaghetti code. From there, the code should lead you into exploring other Classes automatically.
 
+NOTE: If you wish to deploy this project to an org, that org must have at least one RecordType for the Account object, OR change the sObject name in the following methods to reference an object in the org that has at least one RecordType:
+* RefactorExamples.doThingsWithRecordTypes_before
+* RefactorExamples.doThingsWithRecordTypes_after
+
 ---
 
 ## 🛠 The Refactor Approach: "Rename, Reduce, Repeat"

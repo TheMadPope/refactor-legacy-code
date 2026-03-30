@@ -36,7 +36,7 @@ public without sharing abstract class SystemSettingService{
         if(setting==null){
             return false;
         }
-        if (setting.Value__c != 'true'){
+        if (setting.Value__c.toLowerCase().trim() != 'true'){
             return false;
         }
         return true;

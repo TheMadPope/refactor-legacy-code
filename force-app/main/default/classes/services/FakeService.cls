@@ -4,4 +4,12 @@ public inherited sharing abstract class FakeService {
     public static void doSingleRecord(SObject record){
         //do things
     }
+
+    //Invoked by the ExampleAccountTriggerHandler - note the implicit cast from List<sObject> to List<Account>!
+    public static void takeAListOfAccounts(List<Account> newRecords){
+    }
+
+    //Invoked by the ExampleAccountTriggerHandler - the caller must explicitly cast to change from sObject
+    public static void takeAMapOfAccounts(Map<Id, Account> newRecords){
+    }
 }

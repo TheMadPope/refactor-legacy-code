@@ -52,7 +52,7 @@ public without sharing abstract class DependencyInjection {
     public static void notRefactoredMethod(List<SObject> newRecords){
         SystemSetting__mdt setting = [SELECT Id, DeveloperName, Value__c
                                       FROM SystemSetting__mdt
-                                      WHERE Name = 'MySetting'
+                                      WHERE DeveloperName = 'MySetting'
                                       LIMIT 1];
         if (setting.Value__c == 'valueA'){
             //do some things
@@ -74,10 +74,10 @@ public without sharing abstract class DependencyInjection {
     @TestVisible
     private static void refactoredMethod(List<SObject> newRecords, SystemSetting__mdt setting){
         if (setting == null){
-            //In reality I'd be getting this from a Service method
+            //In reality I'd be getting this from a Service or Selector method
             setting = [SELECT Id, DeveloperName, Value__c
                        FROM SystemSetting__mdt
-                       WHERE Name = 'MySetting'
+                       WHERE DeveloperName = 'MySetting'
                        LIMIT 1];
         }
         if (setting.Value__c == 'valueA'){

@@ -27,7 +27,7 @@ public without sharing class RefactorExamples {
     }
 
 
-    public static void doThingsWithRecordTypes_before(){
+    public static void doThingsWithRecordTypes_before(List<Account> records){
         RecordTypeInfo myRecordType = Schema.getGlobalDescribe().get('Account').getDescribe().getRecordTypeInfosByDeveloperName().get('My_Record_Type');
         Id myRecordTypeId = myRecordType.getRecordTypeId();
         for (Account record :records){
@@ -118,4 +118,5 @@ public without sharing class RefactorExamples {
             result.addAll(thisList);
         }
         return result;
+    }
 }
