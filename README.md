@@ -55,12 +55,15 @@ You don't need them! Lots of data shows they actually slow us down and increase 
 (https://www.jonas.rs/2025/02/09/report-summary-gitclear-ai-code-quality-research-2025.html)
 (https://www.gitclear.com/ai_assistant_code_quality_2025_research)
 (https://www.devclass.com/ai-ml/2025/02/20/ai-is-eroding-code-quality-states-new-in-depth-report/1626250)
+(https://www.faros.ai/research/ai-acceleration-whiplash)
 
 If you feel that you *must* use a robot, keep them on a short leash! Use them for atomic actions, like: *"Please turn thisVariable into a class-level static variable with lazy loading."*
 
-* **Configuration:** I've included an example `copilot-instructions.md` file in the `.github` folder. Modify as you wish! Also be sure to update any references to actual files, so the robot can find what you're talking about.
+* **Configuration:** I've included an example `copilot-instructions.md` file in the `.github` folder. Modify as you wish! Include naming conventions, positive and negative examples, etc. NOTE that (currently) linking to related files as examples is unreliable. I am confident this will improve in the near future, because it's a pretty obvious use case.
 * **Refinement:** Robots are quite good at helping to refine your configuration files.
 * **Verification:** Don't Trust, Also Verify! Always verify what it's imagining the words should be.
+* **Avoid Personas:** The common convention to prompt an LLM with "You are a Salesforce expert..." etc., tends to INCREASE hallucinations. Your coding assistant - Copilot, Claude, Cursor, Vibes, whatever - ALREADY has an uber-prompt that tells it what it is. Don't confuse it.
+* **Use Javadoc Comments:** You can write them yourself, or you can use a robot to do it for you. This helps both humans AND robots to understand what a (properly factored, atomic) method is and is not accomplishing.
 
 ---
 
