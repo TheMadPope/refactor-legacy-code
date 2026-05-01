@@ -2,7 +2,7 @@
 
 ## General Principles
 
-- **Consider the entire #codebase** when answering questions
+- **Consider the entire codebase** when answering questions
 - **Disregard deprecated/legacy code** - ignore classes and methods marked as deprecated or legacy
 - **Search comprehensively** - examine all subfolders within classes/ and triggers/ folders
 - **Reuse existing code** - prefer existing patterns, methods, and classes over creating new ones
@@ -65,6 +65,26 @@ public static void createTacoReminders(Map<Id, Taco__c> tacoById) {
   - Prefer `Database` methods over DML statements (e.g., `Database.insert()` vs `insert`)
 - **Trigger handlers**: Delegate to Service classes; don't perform business logic directly
 
+### Class Defaults
+
+- **All Service and Selector classes should be `abstract`** with only `static` methods by default
+  - This prevents instantiation and enforces stateless utility usage
+  - Example: `public inherited sharing abstract class AccountService { ... }`
+  - **Exception**: Trigger handlers extend `TriggerHandler` and use instance methods via `.run()`
+
+### Selector Class Guidelines
+
+- **All SOQL queries belong in an object-specific Selector class** (e.g., `AccountSelector` for Account queries)
+- **Exception**: When the query is the `variable_list` part of a `for` loop — Apex automatically chunks these into batches of 200 records, which is lost if the query is moved to a Selector method
+- Selectors don't need complex overloading frameworks — they can simply be a centralized place for queries to live
+- **Method naming**: Exclude the object name — the class already provides context
+  - ✅ **Correct**: `AccountSelector.getBySource(String source)`
+  - ❌ **Incorrect**: `AccountSelector.getAccountBySource(String source)`
+- **SOQL formatting**:
+  - `SELECT` fields: `Id` first, then alphabetically
+  - Multi-line format for readability: `SELECT`, `FROM`, `WHERE`, `AND`/`OR` on separate lines
+  - Align continued clauses under the opening keyword
+
 ### Service Class Ownership Rules
 
 Service methods belong to the class representing the **object being modified**, not the input object:
@@ -80,12 +100,11 @@ Service methods belong to the class representing the **object being modified**, 
 
 ### Required Structure
 
-1. **Extend base class**: `./force-app/main/default/classes/utility/TriggerHandler.cls`
-   - Reference: `ContactTrigger`
+1. **Extend base class**: `./force-app/main/default/classes/utilities/TriggerHandler.cls`
 2. **Delegate to Service classes**: Use composed methods, pass records to Service
-   - Reference: `./force-app/main/default/classes/triggerHandlers/AccountTriggerHandler.cls`
+   - Reference: `./force-app/main/default/classes/examples/ExampleAccountTriggerHandler.cls`
 3. **Register all events**: Attach triggers to ALL events (before/after insert/update/delete/undelete)
-4. **Location**: `./force-app/main/default/triggers/bridge/`
+4. **Location**: `./force-app/main/default/triggers/`
 5. **One-line handler invocation**: Instantiate and call `.run()` in a single statement
    - ✅ **Correct**: `new ObjectTriggerHandler().run();`
    - ❌ **Incorrect**: Declaring a variable first, then calling `.run()` on separate line
@@ -109,10 +128,10 @@ trigger ContactTrigger on Contact (before insert, after insert, before update, a
 ### Method Organization and Style
 
 - Keep methods **thin and reusable**
-- - **Target**: Methods should be 10-30 lines max
-- - **If longer**: Break into smaller helper methods
-- - **Single Responsibility**: Each method does ONE thing (SLAP principle)
-- - **Reusable**: Parameterize instead of hardcoding values (DRY principle)
+  - **Target**: Methods should be 10-30 lines max
+  - **If longer**: Break into smaller helper methods
+  - **Single Responsibility**: Each method does ONE thing (SLAP principle)
+  - **Reusable**: Parameterize instead of hardcoding values (DRY principle)
 - Order methods **alphabetically** within each class
 - Return type is defined by signature - don't include in method name
 - **Use JavaDoc comments for every method** (except unit test methods)
@@ -125,6 +144,8 @@ trigger ContactTrigger on Contact (before insert, after insert, before update, a
      */
     public static void createTacoReminders(Map<Id, Taco__c> tacoById) {
     ```
+
+---
 
 ## Pre-Edit Checklist
 
@@ -252,6 +273,7 @@ Assert.areEqual(expected, actual, 'Message');
 | Methods | camelCase | `processRecords`, `calculateTotal` |
 | Methods | Avoid redundant context | In `TaskService`: `createReminder()` ✅<br>`createTaskReminder()` ❌ |
 | Variables | camelCase | `loopCounter` (not `intLoopCounter`) |
+| Constants | SCREAMING_SNAKE_CASE | `MAX_RETRY_COUNT`, `DEFAULT_BATCH_SIZE` |
 | Maps | `valueByKey` pattern | `accountById`, `contactsByAccountId` |
 
 ### Flows
@@ -286,7 +308,9 @@ ObjectName_ThingYouAreDoing
 
 ### LWC Naming Conventions
 
-**CRITICAL**: Use **fully lowercase** naming for all LWC components, attributes, and properties:
+**CRITICAL**: Use **fully lowercase** naming for all LWC components, attributes, and properties.
+
+> **Note**: This intentionally diverges from Salesforce's default camelCase/kebab-case conventions. By using all-lowercase names, you avoid casing mismatches between HTML attributes and JavaScript properties, eliminate the need for dash-to-camelCase translation, and keep names consistent across metadata elements (component folders, HTML, and JS).
 
 | Element | Convention | Example |
 |---------|------------|---------|

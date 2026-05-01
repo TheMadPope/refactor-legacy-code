@@ -5,8 +5,7 @@
  *               In the Trigger itself, register on EVERY step, and invoke triggerHandler.Run(), e.g.:
  *
  * trigger ExampleTrigger on Contact (before insert, after insert, before update, after update, before delete, after delete) {
- *    ContactTriggerHandler handler = new ContactTriggerHandler();
- *    handler.Run();
+ *    new ContactTriggerHandler().run();
  * }
  * @author Chris Aldridge, http://chrisaldridge.com/triggers/lightweight-apex-trigger-framework/
  * @date 2016-01-04

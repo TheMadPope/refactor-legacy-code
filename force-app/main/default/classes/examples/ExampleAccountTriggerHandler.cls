@@ -36,8 +36,8 @@ public class ExampleAccountTriggerHandler extends TriggerHandler {
     /**
      * Action(s) to take on Before Update action.
      * NOTE! This is an example of a trigger bypass in action.
-     * @param newRecordsById (Map<Id, SObject>): Map of records after insert, by their Ids
-     * @param oldRecordsById (Map<Id, SObject>): Map of records after insert, by their Ids
+     * @param oldRecordsById (Map<Id, SObject>): Map of records before update, by their Ids
+     * @param newRecordsById (Map<Id, SObject>): Map of records after update, by their Ids
      */
     public override void beforeUpdate(Map<Id, SObject> newRecordsById, Map<Id, SObject> oldRecordsById){
        //I have it as a single line conditional, which I typically avoid, but this way
