@@ -118,7 +118,7 @@ public class TestFactory{
      * @param parameters (Map<String, object>): Fields to set on the object
      * @param doInsert (boolean): If TRUE, performs Database.insert
      * @return SystemSetting__mdt: Created sObject
-     * @notes: Oooh look at that, you can create a Custom Metadat record for use in your testing!
+     * @notes: Oooh look at that, you can create a Custom Metadata record for use in your testing!
      *         PLEASE NOTE however that you CANNOT insert Custom Metadata. But this works great for dependency injection
      */
     public static SystemSetting__mdt systemSettingBuild(Map<String, object> parameters){
@@ -126,8 +126,8 @@ public class TestFactory{
             parameters = new Map<String, object>();
         }
         //Add required fields with defaults if not provided in the parameters
-        if (!parameters.containsKey('Name')){
-            parameters.put('Name', 'TestSystemSetting' + randomString(10));
+        if (!parameters.containsKey('DeveloperName')){
+            parameters.put('DeveloperName', 'TestSystemSetting' + randomString(10));
         }
         SystemSetting__mdt result = (SystemSetting__mdt) JSON.deserialize(JSON.serialize(parameters), Type.forName('SystemSetting__mdt'));
         return result;
